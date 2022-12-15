@@ -49,3 +49,19 @@ def annotate_data_in_tables(name, cur=None):
         ORDER BY total DESC
     ''')
     return cur.fetchall()
+
+
+def summary_data_in_tables(name, cur=None):
+    """
+    Предоставляет данные из таблицы получая в качестве агрументов имя таблицы,
+    объект Cursor. Данные группируются по полю detail и сортируются по
+    убыванию.
+    """
+    cur.execute(f'''
+        SELECT type, month, year, COUNT(*) AS total
+        FROM {name}
+        WHERE year = {current_year} AND month <= {current_month}
+        GROUP BY type
+        ORDER BY total DESC
+    ''')
+    return cur.fetchall()
