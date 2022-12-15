@@ -1,18 +1,16 @@
-import os
+"""Модуль с основной логикой."""
+
 import sqlite3
 
-from openpyxl import load_workbook
+from openpyxl import load_workbook, Workbook
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-FILE_NAME = 'analisis.xlsx'
-DB_NAME = 'db.sqlite'
-DB_FILE = 'file:' + os.path.join(BASE_DIR, DB_NAME)
+from constants import COMPRES_TUPLE, DB_FILE, FILENAME, TABLES_NAME
+from manage_db import (add_data_in_tables, annotate_data_in_tables,
+                       create_table)
 
 uktol = list()
 compressors = list()
 others = list()
-
-COMPRES_TUPLE = ('вв', 'акв', 'дэн')
 
 CHOICE = {
     'уктол': uktol,
@@ -20,7 +18,13 @@ CHOICE = {
     'прочее': others
 }
 
-wb = load_workbook(filename=os.path.join(BASE_DIR, FILE_NAME), data_only=True)
+TABLE_NAME_AND_DATA = {
+    'uktol': uktol,
+    'compressors': compressors,
+    'others': others
+}
+
+wb = load_workbook(filename=FILENAME, data_only=True)
 
 wb.active = 0
 
@@ -41,53 +45,41 @@ for i in range(1, sheet.max_row):
 con = sqlite3.connect(DB_FILE, uri=True)
 cur = con.cursor()
 
-cur.executescript('''
-    CREATE TABLE IF NOT EXISTS compressors(
-        id INTEGER PRIMARY KEY,
-        type TEXT,
-        detail TEXT,
-        reason TEXT,
-        respondent TEXT,
-        month INTEGER
-    );
+create_table(*TABLES_NAME, cur=cur)
 
-    CREATE TABLE IF NOT EXISTS uktol(
-        id INTEGER PRIMARY KEY,
-        type TEXT,
-        detail TEXT,
-        reason TEXT,
-        respondent TEXT,
-        month INTEGER
-    );
+for table, data in TABLE_NAME_AND_DATA.items():
+    add_data_in_tables(table, cur=cur, data=data)
 
-    CREATE TABLE IF NOT EXISTS others(
-        id INTEGER PRIMARY KEY,
-        type TEXT,
-        detail TEXT,
-        reason TEXT,
-        respondent TEXT,
-        month INTEGER
-    );
-''')
-
-cur.executemany(
-    'INSERT INTO uktol ('
-    'type, detail, reason, respondent, month'
-    ') VALUES(?, ?, ?, ?, ?);',
-    uktol
-)
-cur.executemany(
-    'INSERT INTO compressors ('
-    'type, detail, reason, respondent, month'
-    ') VALUES(?, ?, ?, ?, ?);',
-    compressors
-)
-cur.executemany(
-    'INSERT INTO others ('
-    'type, detail, reason, respondent, month'
-    ') VALUES(?, ?, ?, ?, ?);',
-    others
+ann_uktol, ann_compressors, ann_others = (
+    annotate_data_in_tables(item, cur=cur)
+    for item in TABLES_NAME
 )
 
 con.commit()
 con.close()
+
+RESULT_TABLES = {
+    'уктол': ann_uktol,
+    'мк': ann_compressors,
+    'прочее': ann_others
+}
+
+result_wb = Workbook()
+
+dest_filename = 'shit.xlsx'
+
+del result_wb['Sheet']
+
+wb_sheet = result_wb.create_sheet(title='общая')
+wb_sheet.append(('Узел', 'Месяц', 'Год', 'Количество'))
+for value in RESULT_TABLES.values():
+    for item in value:
+        wb_sheet.append(item)
+
+for name, value in RESULT_TABLES.items():
+    wb_sheet = result_wb.create_sheet(title=name)
+    wb_sheet.append(('Узел', 'Месяц', 'Год', 'Количество'))
+    for item in value:
+        wb_sheet.append(item)
+
+result_wb.save(filename=dest_filename)
