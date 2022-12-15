@@ -10,7 +10,7 @@ COMPRES_TUPLE = ('вв', 'акв', 'дэн')
 EXCEL_NAME = 'analisis.xlsx'
 FILENAME = os.path.join(BASE_DIR, EXCEL_NAME)
 
-DB_NAME = 'db.sqlite'
+DB_NAME = 'db.sqlite3'
 DB_FILE = 'file:' + os.path.join(BASE_DIR, DB_NAME)
 
 HARDWARE: Tuple[str] = ('УКТОЛ', 'ВВ', 'АКВ', 'ДЭН', 'Прочее')
