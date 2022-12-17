@@ -42,7 +42,7 @@ def annotate_data_in_tables(name, cur=None):
     убыванию.
     """
     cur.execute(f'''
-        SELECT detail, month, year, COUNT(*) AS total
+        SELECT type, detail, COUNT(*) AS total
         FROM {name}
         WHERE year = {current_year} AND month <= {current_month}
         GROUP BY detail
@@ -51,17 +51,27 @@ def annotate_data_in_tables(name, cur=None):
     return cur.fetchall()
 
 
-def summary_data_in_tables(name, cur=None):
+def annotate_data_previous_year(details, cur=None):
     """
-    Предоставляет данные из таблицы получая в качестве агрументов имя таблицы,
-    объект Cursor. Данные группируются по полю detail и сортируются по
+    Предоставляет данные из таблицы за четыре предыдущих года,
+    получая в качестве агрументов кортеж из типа оборудования и отказавшего
+    узла, объект Cursor. Данные группируются по полю detail и сортируются по
     убыванию.
     """
-    cur.execute(f'''
-        SELECT type, month, year, COUNT(*) AS total
-        FROM {name}
-        WHERE year = {current_year} AND month <= {current_month}
-        GROUP BY type
-        ORDER BY total DESC
-    ''')
-    return cur.fetchall()
+    name, detail = details
+    result = []
+
+    for i in range(1, 5):
+        cur.execute(f'''
+            SELECT COUNT(*) AS total
+            FROM {name}
+            WHERE year = {current_year - i} AND month <= {current_month}
+            AND detail = '{detail}'
+            GROUP BY detail
+        ''')
+        data = cur.fetchone()
+        if data is None:
+            result.append(0)
+        else:
+            result.append(data[0])
+    return tuple(result)

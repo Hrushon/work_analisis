@@ -6,7 +6,8 @@ from openpyxl import load_workbook, Workbook
 
 from constants import COMPRES_TUPLE, DB_FILE, FILENAME, TABLES_NAME
 from manage_db import (add_data_in_tables, annotate_data_in_tables,
-                       create_table, summary_data_in_tables)
+                       annotate_data_previous_year, create_table,
+                       current_month, current_year)
 
 uktol = list()
 compressors = list()
@@ -57,19 +58,23 @@ ann_uktol, ann_compressors, ann_others = (
     for item in TABLES_NAME
 )
 
-sum_result = [
-    summary_data_in_tables(item, cur=cur)
-    for item in TABLES_NAME
-]
-
-con.commit()
-con.close()
+sum_result = [ann_uktol, ann_compressors, ann_others]
 
 RESULT_TABLES = {
     'уктол': ann_uktol,
     'мк': ann_compressors,
     'прочее': ann_others
 }
+
+COL_NAMES = (
+    'Оборудование',
+    'Узел',
+    f'{current_year}г.',
+    f'{current_year - 1}г.',
+    f'{current_year - 2}г.',
+    f'{current_year - 3}г.',
+    f'{current_year - 4}г.'
+)
 
 result_wb = Workbook()
 
@@ -78,15 +83,26 @@ dest_filename = 'shit.xlsx'
 del result_wb['Sheet']
 
 wb_sheet = result_wb.create_sheet(title='общая')
-wb_sheet.append(('Оборудование', 'Месяц', 'Год', 'Количество'))
-for value in sum_result:
-    for item in value:
-        wb_sheet.append(item)
+wb_sheet.append(COL_NAMES)
 
 for name, value in RESULT_TABLES.items():
     wb_sheet = result_wb.create_sheet(title=name)
-    wb_sheet.append(('Узел', 'Месяц', 'Год', 'Количество'))
+    wb_sheet.append(COL_NAMES)
     for item in value:
+        details = item[:2]
+        if details[0].lower() in COMPRES_TUPLE:
+            details = ('compressors', details[1])
+        elif details[0].lower() == 'уктол':
+            details = ('uktol', details[1])
+        else:
+            details = ('others', details[1])
+
+        prev_data = annotate_data_previous_year(details, cur=cur)
+        item = item + prev_data
         wb_sheet.append(item)
+        result_wb['общая'].append(item)
 
 result_wb.save(filename=dest_filename)
+
+con.commit()
+con.close()
