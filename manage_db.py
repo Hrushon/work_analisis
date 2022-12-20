@@ -1,8 +1,5 @@
 """Модуль с функциями управления БД."""
 
-current_year = 2022
-current_month = 6
-
 
 def create_table(*args, cur=None):
     """
@@ -36,7 +33,7 @@ def add_data_in_tables(name, cur=None, data=None):
     )
 
 
-def annotate_data_in_tables(name, cur=None):
+def annotate_data_in_tables(name, current_month, current_year, cur=None):
     """
     Предоставляет данные из таблицы получая в качестве агрументов имя таблицы,
     объект Cursor. Данные группируются по полю detail и сортируются по
@@ -52,7 +49,9 @@ def annotate_data_in_tables(name, cur=None):
     return cur.fetchall()
 
 
-def annotate_data_previous_year(details, cur=None):
+def annotate_data_previous_year(
+    details, current_month, current_year, cur=None
+):
     """
     Предоставляет количество отказов из таблицы за четыре предыдущих года,
     получая в качестве агрументов кортеж из типа оборудования и отказавшего
