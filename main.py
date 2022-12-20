@@ -69,12 +69,32 @@ RESULT_TABLES = {
 COL_NAMES = (
     'Оборудование',
     'Узел',
-    f'{current_year}г.',
-    f'{current_year - 1}г.',
-    f'{current_year - 2}г.',
-    f'{current_year - 3}г.',
-    f'{current_year - 4}г.'
+    f'Кол-во за {current_year}г. в ед.',
+    f'Кол-во за {current_year}г. в ед./млн.км.',
+    f'Кол-во за {current_year - 1}г. в ед.',
+    f'Кол-во за {current_year - 1}г. в ед./млн.км.',
+    f'Кол-во за {current_year - 2}г. в ед.',
+    f'Кол-во за {current_year - 2}г. в ед./млн.км.',
+    f'Кол-во за {current_year - 3}г. в ед.',
+    f'Кол-во за {current_year - 3}г. в ед./млн.км.',
+    f'Кол-во за {current_year - 4}г. в ед.',
+    f'Кол-во за {current_year - 4}г. в ед./млн.км.'
 )
+
+
+def count_per_kilometers(args):
+    result = list()
+    for index, value in enumerate(args):
+        if index & 1:
+            continue
+        try:
+            res = value / args[index + 1]
+        except ZeroDivisionError:
+            res = 0
+        result.append(value)
+        result.append(res)
+    return tuple(result)
+
 
 result_wb = Workbook()
 
@@ -98,7 +118,8 @@ for name, value in RESULT_TABLES.items():
             details = ('others', details[1])
 
         prev_data = annotate_data_previous_year(details, cur=cur)
-        item = item + prev_data
+        prev_year_data_with_kilo = count_per_kilometers(prev_data)
+        item = item[:-1] + prev_year_data_with_kilo
         wb_sheet.append(item)
         result_wb['общая'].append(item)
 
