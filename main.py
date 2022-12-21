@@ -95,7 +95,7 @@ def main_func(filename, current_month, current_year):
 
     result_wb = Workbook()
 
-    dest_filename = 'shit.xlsx'
+    dest_filename = 'reports/shit.xlsx'
 
     del result_wb['Sheet']
 
