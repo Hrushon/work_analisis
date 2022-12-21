@@ -140,7 +140,6 @@ def analyse_func(current_month, current_year):
     
     os.makedirs('reports', exist_ok=True)
     dest_filename = 'reports/analysis.xlsx'
-
     del result_wb['Sheet']
 
     wb_sheet = result_wb.create_sheet(title='общая')
