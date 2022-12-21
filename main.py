@@ -31,7 +31,7 @@ table_name_and_data = {
     'uktol': uktol,
     'vv': vv,
     'akv': akv,
-    'den': den,    
+    'den': den,
     'others': others
 }
 
@@ -82,7 +82,7 @@ def add_data_in_db_func(filename):
             result[-1] = result[-1] * percentage[type_of_machine]
 
         target.append(tuple(result))
-    
+
     con = sqlite3.connect(DB_FILE, uri=True)
     cur = con.cursor()
 
@@ -90,7 +90,7 @@ def add_data_in_db_func(filename):
 
     for table, data in table_name_and_data.items():
         add_data_in_tables(table, cur=cur, data=data)
-    
+
     con.commit()
     con.close()
 
@@ -137,9 +137,10 @@ def analyse_func(current_month, current_year):
     }
 
     result_wb = Workbook()
-    
+
     os.makedirs('reports', exist_ok=True)
     dest_filename = 'reports/analysis.xlsx'
+
     del result_wb['Sheet']
 
     wb_sheet = result_wb.create_sheet(title='общая')

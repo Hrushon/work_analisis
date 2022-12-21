@@ -27,7 +27,7 @@ def add_data_in_db():
         label.pack()
     else:
         label = tk.Label(text='<<<<<Данные успешно загружены!>>>>>')
-        label.pack()    
+        label.pack()
 
 
 def get_date():

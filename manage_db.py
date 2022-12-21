@@ -29,8 +29,7 @@ def add_data_in_tables(name, cur=None, data=None):
     cur.executemany(f'''
         INSERT INTO {name} (
         type, detail, reason, respondent, month, year, mileage
-        ) VALUES(?, ?, ?, ?, ?, ?, ?);''', data
-    )
+        ) VALUES(?, ?, ?, ?, ?, ?, ?);''', data)
 
 
 def annotate_data_in_tables(name, current_month, current_year, cur=None):
